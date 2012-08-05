@@ -1,0 +1,1 @@
+../src/closure-library/closure/bin/build/depswriter.py --root_with_prefix=" ../src/rocket/ ../../../rocket/"  > ../src/generated-dependencies.js

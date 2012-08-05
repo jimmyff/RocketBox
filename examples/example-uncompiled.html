@@ -1,0 +1,36 @@
+<html>
+<head>
+	<title>RocketPlayer - Uncompiled Example</title>
+	<base href="../" />
+    <script src="src/closure-library/closure/goog/base.js"></script>
+    <script src="src/generated-dependencies.js"></script>
+	<script>goog.require('rocket.player.Player');</script>
+	<style>body { padding:0px; margin:0; text-align:center; font-family:Arial; background-color:#ccc; }</style>	
+</head>
+<body>
+	<div id="test1"></div>
+	<div id="test2"></div>
+	<script>
+	test1 = new rocket.player.Player(
+		null,
+		{
+			id:'test1',
+			width:870,
+			height:350,
+			title: 'Application Title Goes Here',
+			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
+		});
+
+	test2 = new rocket.player.Player(
+		null,
+		{
+			id:'test2',
+			width:870,
+			height:350,
+			title: 'Another Application Title Goes Here',
+			description: "Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat."
+		});
+
+	</script>
+</body>
+</html>
