@@ -1,7 +1,8 @@
 goog.provide('rocket.player.Player');
+
 goog.require('goog.events');
 goog.require('goog.style');
-
+goog.require('goog.object');
 goog.require('goog.fx.dom.FadeInAndShow');
 goog.require('goog.fx.dom.FadeOutAndHide');
 
@@ -10,7 +11,7 @@ goog.exportSymbol('RocketPlayer', rocket.player.Player);
 /**
  * @constructor
  */
-rocket.player.Player = function (app, options) {
+rocket.player.Player = function (app, userOptions) {
 
 	this.app		= app;
 	if (!this.app)
@@ -20,7 +21,19 @@ rocket.player.Player = function (app, options) {
 			'pause': function () { }
 		};
 
-	this.options	= options;
+	// default options
+	this.options	= {
+		'id'			: undefined,
+		'title'			: undefined,
+		'description'	: undefined,
+		'autoPlay'		: true,
+		'width'			: 480,
+		'height'		: 320
+	};
+
+	// extend default options with user options
+	goog.object.extend(this.options, userOptions);
+
 
 	this.canvas		= undefined;
 	this.ctx		= undefined;
@@ -53,6 +66,8 @@ rocket.player.Player.prototype = {
 			'viewportHeight'	: undefined,
 			'renderCallback'	: goog.bind(this.appTicked, this)
 		});
+
+		if (window.rocketPlayerAppId === undefined && this.options['autoPlay']) this.play({animateOverlay:false});
 
 	},
 
@@ -185,32 +200,48 @@ rocket.player.Player.prototype = {
         playerContainer.appendChild(infoBar);
 
 	},
-	play: function () {
+	play: function (options) {
 
-		if (!this.running) this.toggle();
+		if (!this.running) this.toggle(options);
 
 	},
-	toggle: function () {
+	toggle: function (options) {
+
+		if (!options) options = {};
 
 		if (!this.running) {
 			
 			/* run the application */
 			this.app['run']();
-
-      		var anim = new goog.fx.dom.FadeOutAndHide(this.overlay, 100);
-      		anim.play();
 			this.running				= true;
-			demoRunning					= this.options.id;
+			window.rocketPlayerAppId	= this.options.id;
 			this.playPause.innerHTML	= this.dictionary.pauseButton;
+
+			// hide overlay
+			if (typeof options.animateOverlay == 'boolean' && options.animateOverlay == false) {
+				goog.style.setOpacity(this.overlay, 0);
+				goog.style.showElement(this.overlay, false);
+			} else {
+				var anim = new goog.fx.dom.FadeOutAndHide(this.overlay, 150);
+				anim.play();
+			}
+			
 
 		} else {
 
 			/* Pause the application */
 			this.app['pause']();
-			var anim = new goog.fx.dom.FadeInAndShow(this.overlay, 200);
-			anim.play();
 			this.running				= false;
 			this.playPause.innerHTML	= this.dictionary.playButton;
+
+			// show overlay
+			if (typeof options.animateOverlay == 'boolean' && options.animateOverlay == false) {
+				goog.style.setOpacity(this.overlay, 1);
+				goog.style.showElement(this.overlay, true);
+			} else {
+				var anim = new goog.fx.dom.FadeInAndShow(this.overlay, 200);
+				anim.play();
+			}
 		}
 
 	},
@@ -221,7 +252,7 @@ rocket.player.Player.prototype = {
 
 		this.fps.innerHTML				= (cycleData.fps?cycleData.fps:'...');
 
-		if (this.running && demoRunning !== this.options.id) {
+		if (this.running && window.rocketPlayerAppId !== this.options.id) {
 			this.toggle();
 		}
 
