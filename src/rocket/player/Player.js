@@ -1,5 +1,6 @@
 goog.provide('rocket.player.Player');
 goog.require('goog.events');
+goog.require('goog.style');
 
 goog.exportSymbol('RocketPlayer', rocket.player.Player);
 
@@ -11,9 +12,9 @@ rocket.player.Player = function (app, options) {
 	this.app		= app;
 	if (!this.app)
 		this.app = {
-			initalise: function () { },
-			run: function () { },
-			pause: function () { }
+			'initalise': function () { },
+			'run': function () { },
+			'pause': function () { }
 		};
 
 	this.options	= options;
@@ -22,7 +23,15 @@ rocket.player.Player = function (app, options) {
 	this.ctx		= undefined;
 	this.running	= false;
 
+	this.dictionary = {
+		overlayPlay		: '&#9658;',
+		playButton		: '&#9658; PLAY',
+		pauseButton		: '&#10073;&#10073; PAUSE',
+		appType			: 'DEMO'
+	};
+
 	this.init();
+
 
 };
 
@@ -63,35 +72,43 @@ rocket.player.Player.prototype = {
         
         // add canvas to body
         var playerContainer = document.getElementById(this.options.id);
-        playerContainer.style.position = 'relative';
-        playerContainer.style.backgroundColor = '#444';
-        playerContainer.style.border = '1px solid #111';
-		playerContainer.style.maxWidth		= this.options.width+'px';
-		playerContainer.style.margin	= '10px auto 10px auto';
-		playerContainer.style.borderRadius		= '0 0 5px 5px';
+
+       goog.style.setStyle(playerContainer, {
+			'position'			: 'relative',
+			'backgroundColor'	: '#444',
+			'border'			: '1px solid #111',
+			'maxWidth'			: this.options.width+'px',
+			'margin'			: '10px auto 10px auto',
+			'borderRadius'		: '0 0 5px 5px'
+		});
+
         playerContainer.appendChild(this.canvas);
 		
 		//this.events.listen('VIEWPORT:RESIZE', this.resize, this);
         var controlBar = document.createElement("div");
 
 
-		controlBar.style.backgroundColor	= '#111';
-		controlBar.style.height				= '22px';
-		controlBar.style.padding			= '5px';
-		controlBar.style.textAlign			= 'left';
+       goog.style.setStyle(controlBar, {
+			'backgroundColor'	: '#111',
+			'height'			: '22px',
+			'padding'			: '5px',
+			'textAlign'			: 'left'
+		});
 
         this.playPause = document.createElement("button");
+		this.playPause.innerHTML = this.dictionary.playButton;
 
-		this.playPause.style.backgroundColor	= '#ff8000';
-		this.playPause.style.color				= 'rgb(255,255,255)';
-		this.playPause.style.borderRadius		= '5px';
-		this.playPause.style.border				= '0px';
-		this.playPause.style.width				= '70px';
-		this.playPause.innerHTML				= 'PLAY';
-		this.playPause.style.font				= '12px Arial';
-		this.playPause.style.fontWeight			= 'bold';
-		this.playPause.style.marginRight		= '10px';
-		this.playPause.style.cursor				= 'hand';
+		goog.style.setStyle(this.playPause, {
+			'backgroundColor'	: '#ff8000',
+			'color'				: 'rgb(255,255,255)',
+			'borderRadius'		: '5px',
+			'border'			: '0px',
+			'width'				: '70px',
+			'font'				: '12px Arial',
+			'fontWeight'		: 'bold',
+			'marginRight'		: '10px',
+			'cursor'			: 'hand'
+		});
 
 		goog.events.listen(this.playPause, 'click', goog.bind(this.toggle, this));
 
@@ -105,14 +122,15 @@ rocket.player.Player.prototype = {
 		playerTitleContainer.style.fontWeight		= 'bold';
 
         var playerTitle = document.createElement("span");
-
-		playerTitle.style.color		= '#ff8000';
-		playerTitle.style.font		= '12px Arial';
 		playerTitle.innerHTML		= this.options.title.toUpperCase();
-		playerTitle.style.fontWeight		= 'bold';
 
+		goog.style.setStyle(playerTitle, {
+			'color'		: '#ff8000',
+			'font'		: '12px Arial',
+			'fontWeight': 'bold'
+		});
 
-		playerTitleContainer.appendChild(document.createTextNode('DEMO: '));
+		playerTitleContainer.appendChild(document.createTextNode(this.dictionary.appType+': '));
 		playerTitleContainer.appendChild(playerTitle);
         controlBar.appendChild(playerTitleContainer);
 
@@ -121,15 +139,20 @@ rocket.player.Player.prototype = {
         playerContainer.appendChild(controlBar);
 
         var fpsContainer = document.createElement("span");
-		fpsContainer.style.color	= 'rgb(180,180,180)';
-		fpsContainer.style.font		= '12px Arial';
-		fpsContainer.style['float']	= 'right';
-        
+		goog.style.setStyle(fpsContainer, {
+			'color'		: 'rgb(180,180,180)',
+			'font'		: '12px Arial',
+			'float'		: 'right'
+		});
+
         this.fps = document.createElement("span");
-		this.fps.style.color			= '#ff8000';
-		this.fps.style.font			= '12px Arial';
-		this.fps.style.fontWeight	= 'bold';
 		this.fps.innerHTML				= '...';
+		goog.style.setStyle(this.fps, {
+			'color'			: '#ff8000',
+			'font'			: '12px Arial',
+			'fontWeight'	: 'bold'
+		});
+
 
 		fpsContainer.appendChild(document.createTextNode('FPS: '));
 		fpsContainer.appendChild(this.fps);
@@ -145,13 +168,15 @@ rocket.player.Player.prototype = {
         // description
         var infoBar = document.createElement("div");
 
+       goog.style.setStyle(infoBar, {
+			'backgroundColor'	: '#333',
+			'color'				: '#777',
+			'padding'			: '5px 5px 7px 5px',
+			'textAlign'			: 'left',
+			'font'				: '12px Arial',
+			'borderRadius'		: '0 0 5px 5px'
+		});
 
-		infoBar.style.backgroundColor	= '#333';
-		infoBar.style.color				= '#777';
-		infoBar.style.padding			= '5px 5px 7px 5px';
-		infoBar.style.textAlign			= 'left';
-		infoBar.style.font				= '12px Arial';
-		infoBar.style.borderRadius		= '0 0 5px 5px';
 		infoBar.appendChild(document.createTextNode(this.options.description));
 
         playerContainer.appendChild(infoBar);
@@ -166,7 +191,7 @@ rocket.player.Player.prototype = {
 			this.overlay.style.display	= 'none';
 			this.running				= true;
 			demoRunning					= this.options.id;
-			this.playPause.innerHTML	= 'PAUSE';
+			this.playPause.innerHTML	= this.dictionary.pauseButton;
 
 		} else {
 
@@ -174,7 +199,7 @@ rocket.player.Player.prototype = {
 			this.app['pause']();
 			this.overlay.style.display	= 'block';
 			this.running				= false;
-			this.playPause.innerHTML	= 'PLAY';
+			this.playPause.innerHTML	= this.dictionary.playButton;
 		}
 
 	},
@@ -194,27 +219,35 @@ rocket.player.Player.prototype = {
 
         this.overlay = document.createElement("div");
 
-		this.overlay.style.backgroundColor	= 'rgba(0,0,0,0.35)';
-		this.overlay.style.width			= '100%';
-		this.overlay.style.height			= this.options.height+'px';
-		this.overlay.style.position			= 'absolute';
-		this.overlay.style.top				= 0;
-		this.overlay.style.left				= 0;
-		this.overlay.style.cursor			= 'hand';
+       goog.style.setStyle(this.overlay, {
+			'backgroundColor'	: 'rgba(0,0,0,0.35)',
+			'width'				: '100%',
+			'height'			:  this.options.height+'px',
+			'position'			: 'absolute',
+			'top'				: 0,
+			'left'				: 0,
+			'cursor'			: 'hand'
+        });
 
+
+       // playButton image specified?
 		if (this.options.playButton) {
-	        this.playButton = document.createElement("img");
+			this.playButton = document.createElement("img");
 			this.playButton.src = this.options.playButton?this.options.playButton:'img/play.png';
 			this.playButton.margin = 'auto auto auto auto';
+		
 		} else {
 			this.playButton = document.createElement("div");
-			this.playButton.innerHTML = '&#9658;'; //(document.createTextNode('&#9658;'));
-			this.playButton.style.color = '#eee';
-			this.playButton.style.fontSize = '64px';
-			this.playButton.style.textAlign = 'center';
-			this.playButton.style.lineHeight = this.options.height+'px';
-			this.playButton.style.margin = 'auto auto auto auto';
-			this.playButton.style.textShadow = '0px 0px 15px #222';
+			this.playButton.innerHTML = this.dictionary.overlayPlay;
+		
+			goog.style.setStyle(this.overlay, {
+				'color'			: '#eee',
+				'fontSize'		: '64px',
+				'textAlign'		: 'center',
+				'lineHeight'	: this.options.height+'px',
+				'margin'		: 'auto auto auto auto',
+				'textShadow'	: '0px 0px 15px #222'
+			});
 			
 
 		}
