@@ -34,8 +34,9 @@ rocket.player.Player.prototype = {
 		this.createOverlay();
 
 		// initalise the application
-		this.app.initalise({
+		this.app['initalise']({
 			'canvas'			: this.canvas,
+			'canvasCtx'			: this.ctx,
 			'viewportWidth'		: undefined,
 			'viewportHeight'	: undefined,
 			'renderCallback'	: goog.bind(this.appTicked, this)
@@ -161,7 +162,7 @@ rocket.player.Player.prototype = {
 		if (!this.running) {
 			
 			/* run the application */
-			this.app.run();
+			this.app['run']();
 			this.overlay.style.display	= 'none';
 			this.running				= true;
 			demoRunning					= this.options.id;
@@ -170,7 +171,7 @@ rocket.player.Player.prototype = {
 		} else {
 
 			/* Pause the application */
-			this.app.pause();
+			this.app['pause']();
 			this.overlay.style.display	= 'block';
 			this.running				= false;
 			this.playPause.innerHTML	= 'PLAY';
@@ -201,10 +202,22 @@ rocket.player.Player.prototype = {
 		this.overlay.style.left				= 0;
 		this.overlay.style.cursor			= 'hand';
 
-        this.playButton = document.createElement("img");
-		this.playButton.src = this.options.playButton?this.options.playButton:'img/play.png';
-		this.playButton.margin = 'auto auto auto auto';
+		if (this.options.playButton) {
+	        this.playButton = document.createElement("img");
+			this.playButton.src = this.options.playButton?this.options.playButton:'img/play.png';
+			this.playButton.margin = 'auto auto auto auto';
+		} else {
+			this.playButton = document.createElement("div");
+			this.playButton.innerHTML = '&#9658;'; //(document.createTextNode('&#9658;'));
+			this.playButton.style.color = '#eee';
+			this.playButton.style.fontSize = '64px';
+			this.playButton.style.textAlign = 'center';
+			this.playButton.style.lineHeight = this.options.height+'px';
+			this.playButton.style.margin = 'auto auto auto auto';
+			this.playButton.style.textShadow = '0px 0px 15px #222';
+			
 
+		}
 		this.overlay.appendChild(this.playButton);
 
         var playerContainer = document.getElementById(this.options.id);
