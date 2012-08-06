@@ -143,7 +143,7 @@ rocket.player.Player.prototype = {
 	createPlayerUi: function () {
 
 		/* Create Player Container */
-        this.ui.playerContainer = goog.dom.createDom('div');
+		this.ui.playerContainer = goog.dom.createDom('div');
 		goog.style.setStyle(this.ui.playerContainer, {
 			'position'			: 'relative',
 			'backgroundColor'	: '#444',
@@ -153,7 +153,7 @@ rocket.player.Player.prototype = {
 			'borderRadius'		: '0 0 5px 5px'
 		});
 
-        // attach container to user referenced dom node
+		// attach container to user referenced dom node
 		var rootContainer = document.getElementById(this.options.id);
 		rootContainer.appendChild(this.ui.playerContainer);
 
@@ -172,16 +172,16 @@ rocket.player.Player.prototype = {
 		
 
 		/* Save Canvas Context */
-        if (!this.ui.canvas.getContext) {
-        	// handle browser support issue... rollback to flash?
+		if (!this.ui.canvas.getContext) {
+			// handle browser support issue... rollback to flash?
 			// this.events.fire('LOG',"Browser not supported");
-            throw "Failed to create canvas element";
-        }
+			throw "Failed to create canvas element";
+		}
 		this.canvasContext = this.ui.canvas.getContext('2d');
-        
+		
 
 
-        /* Create Control Bar */
+		/* Create Control Bar */
 		this.ui.controlBar = goog.dom.createDom('div');
 		goog.style.setStyle(this.ui.controlBar, {
 			'backgroundColor'	: '#111',
@@ -192,7 +192,7 @@ rocket.player.Player.prototype = {
 
 
 		/* Create Play / Pause Button */
-        this.ui.playPauseButton = goog.dom.createDom('button');
+		this.ui.playPauseButton = goog.dom.createDom('button');
 		this.ui.playPauseButton.innerHTML = this.dictionary.playButton;
 		goog.style.setStyle(this.ui.playPauseButton, {
 			'backgroundColor'	: '#ff8000',
@@ -206,12 +206,12 @@ rocket.player.Player.prototype = {
 			'cursor'			: 'hand'
 		});
 		goog.events.listen(this.ui.playPauseButton, 'click', goog.bind(this.toggle, this));
-        this.ui.controlBar.appendChild(this.ui.playPauseButton);
+		this.ui.controlBar.appendChild(this.ui.playPauseButton);
 
 
 
-        /* Application Title */
-        this.ui.playerTitle = goog.dom.createDom('span');
+		/* Application Title */
+		this.ui.playerTitle = goog.dom.createDom('span');
 		this.ui.playerTitle.innerHTML = this.options.title.toUpperCase();
 		goog.style.setStyle(this.ui.playerTitle, {
 			'color'		: '#ff8000',
@@ -228,12 +228,12 @@ rocket.player.Player.prototype = {
 		});
 		this.ui.playerTitleContainer.appendChild(document.createTextNode(this.dictionary.appType+': '));
 		this.ui.playerTitleContainer.appendChild(this.ui.playerTitle);
-        this.ui.controlBar.appendChild(this.ui.playerTitleContainer);
+		this.ui.controlBar.appendChild(this.ui.playerTitleContainer);
 
 
 
 		/* Create FPS span */
-        this.ui.fps = goog.dom.createDom('span');
+		this.ui.fps = goog.dom.createDom('span');
 		this.ui.fps.innerHTML				= '...';
 		goog.style.setStyle(this.ui.fps, {
 			'color'			: '#ff8000',
@@ -242,8 +242,8 @@ rocket.player.Player.prototype = {
 		});
 
 
-        /* Create FPS container */
-        this.ui.fpsContainer = goog.dom.createDom('span');
+		/* Create FPS container */
+		this.ui.fpsContainer = goog.dom.createDom('span');
 		goog.style.setStyle(this.ui.fpsContainer, {
 			'color'		: 'rgb(180,180,180)',
 			'font'		: '12px Arial',
@@ -251,16 +251,16 @@ rocket.player.Player.prototype = {
 		});
 		this.ui.fpsContainer.appendChild(document.createTextNode('FPS: '));
 		this.ui.fpsContainer.appendChild(this.ui.fps);
-        this.ui.controlBar.appendChild(this.ui.fpsContainer);
+		this.ui.controlBar.appendChild(this.ui.fpsContainer);
 
 
-        // add control bar to Player
-        this.ui.playerContainer.appendChild(this.ui.controlBar);
+		// add control bar to Player
+		this.ui.playerContainer.appendChild(this.ui.controlBar);
 
 
 
-        /* Create Info Bar (description) */
-        this.ui.infoBar = goog.dom.createDom('div');
+		/* Create Info Bar (description) */
+		this.ui.infoBar = goog.dom.createDom('div');
 		goog.style.setStyle(this.ui.infoBar, {
 			'backgroundColor'	: '#333',
 			'color'				: '#777',
@@ -270,20 +270,20 @@ rocket.player.Player.prototype = {
 			'borderRadius'		: '0 0 5px 5px'
 		});
 		this.ui.infoBar.appendChild(document.createTextNode(this.options.description));
-        this.ui.playerContainer.appendChild(this.ui.infoBar);
+		this.ui.playerContainer.appendChild(this.ui.infoBar);
 
 
-        /* Create Paused Overlay */
-        this.ui.overlay = goog.dom.createDom('div');
+		/* Create Paused Overlay */
+		this.ui.overlay = goog.dom.createDom('div');
 		goog.style.setStyle(this.ui.overlay, {
 			'backgroundColor'	: 'rgba(0,0,0,0.35)',
 			'width'				: '100%',
-			'height'			:  this.options.height+'px',
+			'height'			: this.options.height+'px',
 			'position'			: 'absolute',
 			'top'				: 0,
 			'left'				: 0,
 			'cursor'			: 'hand'
-        });
+		});
 		// overlay: play icon
 		this.ui.playButton = goog.dom.createDom('div');
 		this.ui.playButton.innerHTML = this.dictionary.overlayPlay;
@@ -296,10 +296,9 @@ rocket.player.Player.prototype = {
 			'textShadow'	: '0px 0px 15px #222'
 		});
 		this.ui.overlay.appendChild(this.ui.playButton);
-        this.ui.playerContainer.appendChild(this.ui.overlay);
+		this.ui.playerContainer.appendChild(this.ui.overlay);
 		goog.events.listen(this.ui.overlay, 'mousemove', goog.bind(this.play, this));
 		goog.events.listen(this.ui.overlay, 'click', goog.bind(this.play, this));
-
 
 	}
 
