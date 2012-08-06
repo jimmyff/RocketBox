@@ -2,6 +2,9 @@ goog.provide('rocket.player.Player');
 goog.require('goog.events');
 goog.require('goog.style');
 
+goog.require('goog.fx.dom.FadeInAndShow');
+goog.require('goog.fx.dom.FadeOutAndHide');
+
 goog.exportSymbol('RocketPlayer', rocket.player.Player);
 
 /**
@@ -182,13 +185,20 @@ rocket.player.Player.prototype = {
         playerContainer.appendChild(infoBar);
 
 	},
+	play: function () {
+
+		if (!this.running) this.toggle();
+
+	},
 	toggle: function () {
 
 		if (!this.running) {
 			
 			/* run the application */
 			this.app['run']();
-			this.overlay.style.display	= 'none';
+
+      		var anim = new goog.fx.dom.FadeOutAndHide(this.overlay, 100);
+      		anim.play();
 			this.running				= true;
 			demoRunning					= this.options.id;
 			this.playPause.innerHTML	= this.dictionary.pauseButton;
@@ -197,7 +207,8 @@ rocket.player.Player.prototype = {
 
 			/* Pause the application */
 			this.app['pause']();
-			this.overlay.style.display	= 'block';
+			var anim = new goog.fx.dom.FadeInAndShow(this.overlay, 200);
+			anim.play();
 			this.running				= false;
 			this.playPause.innerHTML	= this.dictionary.playButton;
 		}
@@ -256,8 +267,8 @@ rocket.player.Player.prototype = {
         var playerContainer = document.getElementById(this.options.id);
         playerContainer.appendChild(this.overlay);
 
-		goog.events.listen(this.overlay, 'mousemove', goog.bind(this.toggle, this));
-		goog.events.listen(this.overlay, 'click', goog.bind(this.toggle, this));
+		goog.events.listen(this.overlay, 'mousemove', goog.bind(this.play, this));
+		goog.events.listen(this.overlay, 'click', goog.bind(this.play, this));
 	}
 
 };
