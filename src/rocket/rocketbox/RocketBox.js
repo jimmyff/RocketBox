@@ -1,26 +1,23 @@
-goog.provide('rocket.player.Player');
+goog.provide('rocket.rocketbox.RocketBox');
 
+goog.require('rocket.util.Events');
+goog.require('rocket.util.Timer');
 goog.require('goog.events');
 goog.require('goog.style');
 goog.require('goog.object');
-goog.require('goog.fx.dom.FadeInAndShow');
-goog.require('goog.fx.dom.FadeOutAndHide');
 
-goog.exportSymbol('RocketPlayer', rocket.player.Player);
+goog.exportSymbol('RocketBox', rocket.rocketbox.RocketBox);
 
 /**
  * @constructor
  */
-rocket.player.Player = function (app, userOptions) {
+rocket.rocketbox.RocketBox = function (app, userOptions) {
 
+	// store the app
 	this.app = app;
-
-	// load a blank app if none specified
 	if (!this.app)
 		this.app = {
-			'initalise': function () { },
-			'run': function () { },
-			'pause': function () { }
+			'initalise'	: function () { }
 		};
 
 	// set default options
@@ -29,6 +26,7 @@ rocket.player.Player = function (app, userOptions) {
 		'title'			: undefined,
 		'description'	: undefined,
 		'autoPlay'		: true,
+		'fps'			: 30,
 		'width'			: 480,
 		'height'		: 320
 	};
@@ -37,9 +35,7 @@ rocket.player.Player = function (app, userOptions) {
 	goog.object.extend(this.options, userOptions);
 
 	this.canvasContext	= undefined;
-	this.ui				= {}; 			/* collection of dom elements */
-
-	this.running		= false;
+	this.ui				= {};			/* collection of dom elements */
 
 	this.dictionary = {
 		overlayPlay		: '&#9658;',
@@ -47,14 +43,32 @@ rocket.player.Player = function (app, userOptions) {
 		pauseButton		: '&#10073;&#10073; PAUSE',
 		appType			: 'DEMO'
 	};
+	
+	this.eventDictionary = {
+		appTick			: 'APP:TICK',
+		appPlay			: 'APP:PLAY',
+		appPause		: 'APP:PAUSE'
+	};
+
+	// create the event handler
+	this.events = new rocket.util.Events();
+
+	// create the timer
+	this.timer = new rocket.util.Timer({
+		events		: this.events,
+		fps			: this.options['fps'],
+		tickEvent	: this.eventDictionary.appTick
+	});
 
 	this.init();
 
 };
 
-rocket.player.Player.prototype = {
+rocket.rocketbox.RocketBox.prototype = {
 		
 	init: function () {
+
+		this.events.listen('APP:TICK', this.appTicked, this);
 
 		// create the player interface
 		this.createPlayerUi();
@@ -63,81 +77,65 @@ rocket.player.Player.prototype = {
 		this.app['initalise']({
 			'canvas'			: this.ui.canvas,
 			'canvasContext'		: this.canvasContext,
+			'events'			: {
+				'fire'				: goog.bind(this.events.fire,this.events), 
+				'listen'			: goog.bind(this.events.listen,this.events)
+			},
 			'viewportWidth'		: undefined,
 			'viewportHeight'	: undefined,
 			'renderCallback'	: goog.bind(this.appTicked, this)
 		});
 
 		// check if the application wants to autoplay
-		if (window.rocketPlayerAppId === undefined && this.options['autoPlay']) 
+		if (window.rocketPlayerAppId === undefined && this.options['autoPlay'])
 			this.play({animateOverlay:false});
 
 	},
 
+	toggle: function () {
+	
+		if (!this.timer.running) this.play();
+		else this.pause();
+	
+	},
+
 	play: function (options) {
 
-		if (this.running) return;
-		if (!options) options = {};
+		if (this.timer.running) return;
 
-		// start the app running
-		this.app['run']();
-		this.running = true;
+		// start the app
+		this.events.fire(this.eventDictionary.appPlay);
+		this.timer.play();
 
 		// set the global app id to current
-		window.rocketPlayerAppId = this.options.id;
+		window.rocketPlayerAppId = this.options['id'];
 		
 		// update ui
 		this.ui.playPauseButton.innerHTML	= this.dictionary.pauseButton;
-		// hide the overlay - check is should be animated or not
-		if (typeof options.animateOverlay == 'boolean' && options.animateOverlay == false) {
-			goog.style.setOpacity(this.ui.overlay, 0);
-			goog.style.showElement(this.ui.overlay, false);
-		} else {
-			var anim = new goog.fx.dom.FadeOutAndHide(this.ui.overlay, 100);
-			anim.play();
-		}
+		goog.style.showElement(this.ui.overlay, false);
 
 	},
 
 	pause: function (options) {
 
-		if (!this.running) return;
-		if (!options) options = {};
+		if (!this.timer.running) return;
 
 		// pause the app
-		this.app['pause']();
-		this.running = false;
+		this.events.fire(this.eventDictionary.appPause);
+		this.timer.pause();
 
 		// update ui
 		this.ui.playPauseButton.innerHTML	= this.dictionary.playButton;
+		goog.style.showElement(this.ui.overlay, true);
 
-		// show overlay - check if should be animated or not
-		if (typeof options.animateOverlay == 'boolean' && options.animateOverlay == false) {
-			goog.style.setOpacity(this.ui.overlay, 1);
-			goog.style.showElement(this.ui.overlay, true);
-		} else {
-			var anim = new goog.fx.dom.FadeInAndShow(this.ui.overlay, 200);
-			anim.play();
-		}
 	},
 
-	toggle: function (options) {
+	appTicked: function (cycleData) {
+	
+		this.ui.fps.innerHTML = (cycleData['fps']?cycleData['fps']:'...');
 
-		if (!this.running)
-			this.play(options);
-		else
-			this.pause(options);
-	},
-
-	appTicked: function () {
-		
-		var cycleData = {fps:'?'};
-
-		this.ui.fps.innerHTML = (cycleData.fps?cycleData.fps:'...');
-
-		if (this.running && window.rocketPlayerAppId !== this.options.id) {
-			this.toggle();
-		}
+		if (this.timer.running && window.rocketPlayerAppId !== this.options['id'])
+			this.pause();
 	},
 
 	createPlayerUi: function () {
@@ -154,7 +152,7 @@ rocket.player.Player.prototype = {
 		});
 
 		// attach container to user referenced dom node
-		var rootContainer = document.getElementById(this.options.id);
+		var rootContainer = document.getElementById(this.options['id']);
 		rootContainer.appendChild(this.ui.playerContainer);
 
 
@@ -212,7 +210,7 @@ rocket.player.Player.prototype = {
 
 		/* Application Title */
 		this.ui.playerTitle = goog.dom.createDom('span');
-		this.ui.playerTitle.innerHTML = this.options.title.toUpperCase();
+		this.ui.playerTitle.innerHTML = this.options['title'].toUpperCase();
 		goog.style.setStyle(this.ui.playerTitle, {
 			'color'		: '#ff8000',
 			'font'		: '12px Arial',
@@ -269,7 +267,7 @@ rocket.player.Player.prototype = {
 			'font'				: '12px Arial',
 			'borderRadius'		: '0 0 5px 5px'
 		});
-		this.ui.infoBar.appendChild(document.createTextNode(this.options.description));
+		this.ui.infoBar.appendChild(document.createTextNode(this.options['description']));
 		this.ui.playerContainer.appendChild(this.ui.infoBar);
 
 
@@ -278,7 +276,7 @@ rocket.player.Player.prototype = {
 		goog.style.setStyle(this.ui.overlay, {
 			'backgroundColor'	: 'rgba(0,0,0,0.35)',
 			'width'				: '100%',
-			'height'			: this.options.height+'px',
+			'height'			: this.options['height']+'px',
 			'position'			: 'absolute',
 			'top'				: 0,
 			'left'				: 0,
@@ -291,7 +289,7 @@ rocket.player.Player.prototype = {
 			'color'			: '#eee',
 			'fontSize'		: '64px',
 			'textAlign'		: 'center',
-			'lineHeight'	: this.options.height+'px',
+			'lineHeight'	: this.options['height']+'px',
 			'margin'		: 'auto auto auto auto',
 			'textShadow'	: '0px 0px 15px #222'
 		});

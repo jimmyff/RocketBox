@@ -11,93 +11,75 @@ goog.provide('rocket.util.Timer');
 rocket.util.Timer = function (config) {
 	
 	this.events			= config.events;
-	this.tickLast 		= null;	// last tick timestamp
-	this.tickCurrent 	= null;	// current tick timestamp
+	this.tickLast		= undefined;		// last tick timestamp
+	this.tickCurrent	= undefined;		// current tick timestamp
 	
 	this.fpsArr			= [];
-	this.fpsAverage		= undefined;
+	this.fpsAverage		= 0;
 	
 	this.speed			= config && config.speed ? config.speed : 1.0;
-	this.fpsCap			= config && config.fpsCap ? config.fpsCap : 30;
-	
-	this.tickCallback 	= undefined;
+	this.fps			= config && config.fps ? config.fps : 30;
+	this.tickEvent		= config && config.tickEvent ? config.tickEvent : 'TICK';
 	
 	this.counter		= 0;
 	this.running		= false;
+
+
 }
 
 rocket.util.Timer.prototype = {
 	
-		
-	init: function (callback) {
-	
-		this.tickCallback 	= callback;
-		this.events.fire('LOG', 'Initalised Timer. FPS Cap: '+this.fpsCap+' speed: '+Math.round(this.speed*100));	
-		
-	},
-	
-	start: function () {
+	play: function () {
+
 		this.tick();
 		this.running = true;
-		this.intervalId = setInterval(goog.bind(this.tick, this), 1000 / this.fpsCap);
+		this.intervalId = setInterval(goog.bind(this.tick, this), 1000 / this.fps);
+
 	},
 
 	pause: function () {
-		this.running = false;
+
 		clearInterval(this.intervalId);
+		this.running = false;
+		this.tickLast = undefined;
+	
 	},
 	
 	tick: function () {
-		var now =  new Date;
+
+		var now = new Date();
 		this.tickCurrent = now.getTime();
-		if (!this.tickLast) 
-			this.tickLast = 0;
+
+		var deltaTime = !this.tickLast?0:this.tickCurrent - this.tickLast;
 		
-		var deltaTime = this.tickCurrent - this.tickLast;
+		if (this.tickLast && deltaTime > 0) {
 		
-		if (deltaTime > 0) {
-		
-			if (deltaTime > (1000/this.fpsCap))
-				deltaTime = (1000/this.fpsCap);
+			if (deltaTime > (1000/this.fps))
+				deltaTime = (1000/this.fps);
 			
 			this.counter += deltaTime / 100;
 		}
 
-		this.events.fire('TICK', {dt: deltaTime, fps: this.fpsAverage, counter: this.counter});
-		//this.tickCallback(deltaTime, this.fpsAverage);
-		
+		this.events.fire(this.tickEvent, {
+			'dt'		: deltaTime,
+			'fps'		: this.fpsAverage,
+			'counter'	: this.counter,
+			'speed'		: this.speed
+		});
 		
 		// calculate the FPS
-		this.fps = 1000 / (this.tickCurrent - this.tickLast);
-		this.fpsArr.push(this.fps);
+		if (this.tickLast && deltaTime > 0) {
+			this.fpsArr.push(1000 / deltaTime);
 
-		if (this.fpsArr.length > this.fpsCap) {
+			if (this.fpsArr.length > this.fps) {
 
-			var fpsTotal = 0;
-			for(var i = 0, l = this.fpsArr.length; i < l; i++)
-				fpsTotal += this.fpsArr[i];
+				for(var fpsTotal = 0, i = 0, l = this.fpsArr.length; i < l; i++)
+					fpsTotal += this.fpsArr[i];
 
-			this.fpsAverage = Math.round(fpsTotal/this.fpsArr.length);
-			this.fpsArr = [];
-			
-			var that = this;
-			
-			goog.array.forEach(goog.dom.getElementsByClass('fps'),
-				function (el) {	el.innerHTML = that.fpsAverage });
-
+				this.fpsAverage = Math.round(fpsTotal/this.fpsArr.length);
+				this.fpsArr = [];
+			}
 		}
-
-		
-/*	
-		// call the next tick to give 30 FPS
-		var msPerFrame = 1000 / this.fpsCap;
-		var delay = msPerFrame; // - (this.tickCurrent -this.tickLast);
-	
-		if (delay < 1) delay = 1;
-		
-		// schedule next tick
-		setTimeout(goog.bind(this.tick, this), delay);
-*/		
 		this.tickLast = this.tickCurrent;
 	}
 }
