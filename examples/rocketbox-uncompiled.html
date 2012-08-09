@@ -5,7 +5,8 @@
     <script src="src/closure-library/closure/goog/base.js"></script>
     <script src="src/generated-dependencies.js"></script>
 	<script>goog.require('rocket.rocketbox.RocketBox');</script>
-	<style>body { padding:0px; margin:0; text-align:center; font-family:Arial; background-color:#ccc; }</style>
+
+	<style>body { padding:0px; margin:0; font-family:Arial; background-color:#ccc; }</style>
 </head>
 <body>
 	<div id="test1"></div>
@@ -15,8 +16,10 @@
 		null,
 		{
 			id:'test1',
+			appType: 'Example',
 			width:870,
 			height:350,
+			playerOptions:['pause','fullscreen'],
 			fps:30,
 			title: 'Application Title Goes Here',
 			description: 'Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua. Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.'
@@ -26,6 +29,7 @@
 		null,
 		{
 			id:'test2',
+			appType: 'Example',
 			width:870,
 			height:350,
 			fps:30,

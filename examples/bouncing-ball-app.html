@@ -32,8 +32,18 @@ BouncingBall.prototype = {
 		this.events = setup.events;
 		this.events.listen('APP:TICK', this.appLoop, this);
 
+		this.events.listen('APP:RESIZE', this.resize, this);
+
 		this.canvasContext.fillStyle = "rgb(245,245,245)";
 		this.canvasContext.fillRect(0, 0, this.width, this.height);
+	},
+
+	resize: function (eventData) {
+
+		this.width 		= eventData.width;
+		this.height 	= eventData.height;
+
+
 	},
 
 	appLoop: function (cycle) {
@@ -85,10 +95,11 @@ BouncingBall.prototype = {
 		new BouncingBall(),
 		{
 			id:'bouncingBall',
+			appType: 'Demo',
 			width:640,
 			height:360,
-			title: 'Bouncing Ball Example Application',
-			description: 'A very simple application demonstrating how to integrate with RocketBox.'
+			title: 'Bouncing Ball Application',
+			description: 'A very simple application demonstrating how to integrate with RocketBox. Resize events are captured by the application and the box is resized in relation to the new size of the player.'
 		});
 
 	</script>
