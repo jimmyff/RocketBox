@@ -12,6 +12,8 @@
 RocketBox is a HTML5 application toolkit. This project has been developed to simplify the process of creating a HTML5 applications. Features include: 
 
  * Front-end player & UI for canvas based applications
+ * Scaling handling
+ * Fullscreen support
  * Events system
  * Render loop timer 
  * Debug & logging system
@@ -19,6 +21,8 @@ RocketBox is a HTML5 application toolkit. This project has been developed to sim
 
 Features in the pipeline:
 
+ * Player quality settings allowing user to downscale of resolution for performance
+ * Aspection ratio control (to support adaptive portrait & landscape apps)
  * Input handling (mouse, keyboard & touch)
  * Audio player & interface controls
  * HTML based interface system
@@ -48,9 +52,9 @@ Passes the setup object to your application. The setup object contains:
 	* canvas : Your Canvas DOM Element
 	* canvasContext : the Canvas 2D Context
 	* events : The event object
-		* fire(eventName, data) :
-		* listen(eventName, callback, context) : 
-	* viewportWidth & viewportHeight: current dimensions of the viewport
+		* fire(eventName, data) : trigger an event, 
+		* listen(eventName, callback, context) : listen for an event
+	* width & height: current dimensions of the canvas
 	* renderCallback: callback for your application to optionally call after rendering each frame (used to calculate FPS)
 	
 Note: If you would like to display a preview frame in the player (shown before the user has clicked play), you should render a single frame to the canvas element after initalise is called.
@@ -95,9 +99,11 @@ test1 = new RocketBox(
 
 ## Configuration options
 
-	* id [string]: This is should correspond to an ID used by the dom element that you want to contain your canvas element.
-	* autoplay [bool]: Should the app start on page load (if another app not already running), defaults to true
+	* id [string]: This is should correspond to an ID used by the dom element that you want to contain your canvas element
+	* autoplay [bool]: Should the app start on page load (if another app not already running) (default: true)
 	* fps [int]: Your apps desired frames per second
 	* width & height [ints]: the dimensions for your player
 	* title [string]: application title
 	* description [string]: application description
+	* fullscreen [bool]: enable fullscreen option (default: false)
+	* canvasResize [bool]: enable canvas resolution to be resized (default: true)

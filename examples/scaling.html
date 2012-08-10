@@ -1,0 +1,69 @@
+<html>
+<head>
+	<title>Scaling examples : RocketBox</title>
+	<base href="../" />
+    <script src="bin/RocketBox.js"></script>
+    <script src="examples/bouncing-ball-app.js"></script>
+    <style>body { padding:0px; margin:0; text-align:center; font-family:Arial; background-color:#ccc; }</style>	
+
+
+</head>
+<body>
+
+	<div id="resize"></div>
+	<script>
+	resize = new RocketBox(
+		new BouncingBall(),
+		{
+			canvasResize		: true,
+			
+			id					:'resize',
+			appType				: 'Demo',
+			width				: 640,
+			height				: 360,
+			title				: 'Resizes app',
+			description			: 'Resize events are captured by the application and the box is resized in relation to the new size of the player.'
+		});
+	</script>
+
+
+	<div id="stretch"></div>
+	<script>
+	stretch = new RocketBox(
+		new BouncingBall(),
+		{
+			canvasResize		: false,
+			
+			id					:'stretch',
+			appType				: 'Demo',
+			width				: 640,
+			height				: 360,
+			title				: 'Stretch app',
+			description			: 'Application is stretched when resized'
+		});
+	</script>
+
+	<!-- NOT YET IMPLEMENTED
+
+	<div id="aspectRatio"></div>
+	<script>
+	aspectRatio = new RocketBox(
+		new BouncingBall(),
+		{
+			canvasResize		: true,
+			canvasAspectRatio	: ['16:9', '1:1'],
+
+			id					:'aspectRatio',
+			appType				: 'Demo',
+			width				: 450,
+			height				: 450,
+			scale				:'resize',
+			title				: '1:1 & 16:9 Aspect Ratio',
+			description			: 'Application will always display in either 6:4 or 16:9 aspect ratio.'
+		});
+	</script>
+
+	-->
+
+</body>
+</html>

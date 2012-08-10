@@ -33,7 +33,8 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 		'fps'			: 30,
 		'width'			: 480,
 		'height'		: 320,
-		'fullscreen'	: false
+		'fullscreen'	: false,
+		'canvasResize'	: true
 	};
 
 	// extend default options with user options
@@ -108,8 +109,8 @@ rocket.rocketbox.RocketBox.prototype = {
 				'fire'				: goog.bind(this.events.fire,this.events), 
 				'listen'			: goog.bind(this.events.listen,this.events)
 			},
-			'viewportWidth'		: undefined,
-			'viewportHeight'	: undefined,
+			'width'				: this.processedCanvasSize.width,
+			'height'			: this.processedCanvasSize.height,
 			'renderCallback'	: goog.bind(this.appTicked, this)
 		});
 
@@ -137,6 +138,10 @@ rocket.rocketbox.RocketBox.prototype = {
 
 
 		this.processedCanvasSize = canvasSize;
+
+		// resize events may be blocked, if so don't resize canvas
+		if (!this.options['canvasResize'])
+			return;
 
 		this.events.fire('APP:RESIZE', {
 			'width'		: canvasSize.width,
