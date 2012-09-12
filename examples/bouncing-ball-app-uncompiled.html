@@ -1,8 +1,10 @@
 <html>
 <head>
-	<title>RocketPlayer - Compiled Example</title>
+	<title>RocketPlayer - Uncompiled Rocketbox Example</title>
 	<base href="../" />
-    <script src="bin/RocketBox.js"></script>
+    <script src="src/closure-library/closure/goog/base.js"></script>
+    <script src="src/generated-dependencies.js"></script>
+	<script>goog.require('rocket.rocketbox.RocketBox');</script>
     <script src="examples/bouncing-ball-app.js"></script>
     <style>body { padding:0px; margin:0; text-align:center; font-family:Arial; background-color:#ccc; }</style>	
 
@@ -13,25 +15,28 @@
 	<div id="bouncingBall_noPlayerUi"></div>
 
 	<script>
-	test1 = new RocketBox(
+	test1 = new rocket.rocketbox.RocketBox(
 		new BouncingBall(),
 		{
 			id:'bouncingBall',
 			appType: 'Demo',
 			width:640,
 			height:360,
+			playerUi: true,
+			logger:true,
 			title: 'Bouncing Ball Application',
 			description: 'A very simple application demonstrating how to integrate with RocketBox. Resize events are captured by the application and the box is resized in relation to the new size of the player.'
 		});
 
-	test2 = new RocketBox(
+	test2 = new rocket.rocketbox.RocketBox(
 		new BouncingBall(),
 		{
 			id:'bouncingBall_noPlayerUi',
 			appType: 'Demo',
 			width:640,
 			height:360,
-			playerUi:false,
+			playerUi: false,
+			logger:true,
 			title: 'Bouncing Ball Application',
 			description: 'A very simple application demonstrating how to integrate with RocketBox. Resize events are captured by the application and the box is resized in relation to the new size of the player.'
 		});

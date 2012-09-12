@@ -62,10 +62,16 @@ Note: If you would like to display a preview frame in the player (shown before t
 ### Events
 
 	* APP:TICK
-		* This is the main event, you should call your 'main app/game loop' when this event fires. It passes an object as a parameter which includes useful information:
-			* dt [int] : delta time, this it the time milliseconds since the last tick
-			* counter [float] : this is the number of seconds your application has been running
-			* fps [float] : the fps average
+		* This is the main event, you should call your 'main app/game loop' when this event fires. It passes an object as a parameter which includes a useful information object.
+			* 'timer' - an object that contains data relating to the timer
+				* dt [int] : delta time, this it the time milliseconds since the last tick
+				* counter [float] : this is the number of seconds your application has been running
+				* fps [float] : the fps average
+			* 'input' - an object that relates to user input
+				* cursor [object] : contains x, y, click events
+				* move [array] : contains array of move events
+				* click [array] : contains array of click events
+				* touch [array] : contains array of touch events
 	* APP:PLAY
 		* This is fired when the application is played, you do not need to do act on this event as the APP:TICK event will start firing. This event is fired incase you want to utilise this information in someway.
 	* APP:PAUSE
@@ -107,3 +113,7 @@ test1 = new RocketBox(
 	* description [string]: application description
 	* fullscreen [bool]: enable fullscreen option (default: false)
 	* canvasResize [bool]: enable canvas resolution to be resized (default: true)
+	* realTimeInputEvents [bool]: input events real time (default: false)
+	* logger [bool]: enable console logging (defualt: false)
+	* playerUi [bool]: show player UI & controls (defualt: true)
+	* flashCanvas [bool]: initalise flashcanvas if available (default: false)

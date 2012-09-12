@@ -18,7 +18,7 @@ rocket.util.Events.prototype = {
 	
 	listen: function(e, fn, ctx) {
 
-		this.fire('LOG', 'Events: Listener Attached: '+e);
+		this.fire('LOG', 'EVENTS> Listener Attached: '+e);
 			
 		var listeners = this.getListeners(e);
 		if (ctx) {
@@ -42,9 +42,6 @@ rocket.util.Events.prototype = {
 	},
 	
 	fire: function(e, args) {
-		
-		if (e !== 'LOG' && e !== 'APP:TICK' && e !== 'CURSOR:MOVE' && e !== 'MOUSE:MOVE' && e !== 'KEYBOARD:KEY')
-			this.fire('LOG', 'Events: Fired: '+e, args);
 		
 		goog.array.forEach(this.getListeners(e), function(fn) {
 			fn.apply(null, !args? [] : (typeof args == 'array'? args : [args]));

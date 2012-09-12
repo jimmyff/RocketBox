@@ -2,6 +2,7 @@ goog.provide('rocket.rocketbox.RocketBox');
 
 goog.require('rocket.util.Events');
 goog.require('rocket.util.Timer');
+goog.require('rocket.util.Logger');
 goog.require('goog.events');
 goog.require('goog.style');
 goog.require('goog.dom');
@@ -24,17 +25,28 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 			'initalise'	: function () { }
 		};
 
+	this.input = {};
+	this.input.cursor = {
+		'x'	:	undefined, 
+		'y'	:	undefined
+	};
+
 	// set default options
 	this.options	= {
-		'id'			: undefined,
-		'title'			: undefined,
-		'description'	: undefined,
-		'autoPlay'		: true,
-		'fps'			: 30,
-		'width'			: 480,
-		'height'		: 320,
-		'fullscreen'	: false,
-		'canvasResize'	: true
+		'id'					: undefined,	// DOM element id
+		'title'					: undefined,	// player ui title
+		'description'			: undefined,	// player ui description
+		'autoPlay'				: true,			// auto start if can
+		'fps'					: 30,			// desired fps
+		'width'					: 480,			// player width
+		'height'				: 320,			// player height
+		'fullscreen'			: false,		// enable fullscreen
+		'autoFullscreen'		: false,		// fullscreen on play
+		'canvasResize'			: true,			// allow canvas resize
+		'realTimeInputEvents'	: false,		// input events real time
+		'logger'				: false,		// enable console logging
+		'playerUi'				: true,			// show player controls
+		'flashCanvas'			: false			// init flashcanvas if avail
 	};
 
 	// extend default options with user options
@@ -48,10 +60,14 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 		playButton			: '&#9658; PLAY',
 		pauseButton			: '&#10073;&#10073; PAUSE',
 		appType				: 'DEMO',
-		fullscreenButton	: 'FULLSCREEN'
+		fullscreenButton	: 'FULLSCREEN',
+		flashCanvasInit		: 'FlashCanvas initalised',
+		flashCanvasMissing	: 'FlashCanvas could not be found',
+		rootElementMissing	: 'Container element not found: '
 	};
 	
 	this.eventDictionary = {
+		timerTick		: 'TIMER:TICK',
 		appTick			: 'APP:TICK',
 		appPlay			: 'APP:PLAY',
 		appPause		: 'APP:PAUSE'
@@ -64,11 +80,17 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 	// create the event handler
 	this.events = new rocket.util.Events();
 
+	this.logger = new rocket.util.Logger({
+		enabled		: this.options['loggerEnabled'],
+		prefix		: this.options['id'],
+		events		: this.events
+	});
+
 	// create the timer
 	this.timer = new rocket.util.Timer({
 		events		: this.events,
 		fps			: this.options['fps'],
-		tickEvent	: this.eventDictionary.appTick
+		tickEvent	: this.eventDictionary.timerTick
 	});
 
 	// size of the canvas the app knows about
@@ -93,10 +115,12 @@ rocket.rocketbox.RocketBox.prototype = {
 
 		goog.style.installStyles(this.cssDictionary.base);
 
-		this.events.listen('APP:TICK', this.appTicked, this);
+		this.events.listen(this.eventDictionary.timerTick, this.appTick, this);
 
 		// create the player interface
 		this.createPlayerUi();
+
+		this.attachInputEvents();
 
 		// check size
 		this.possibleCanvasResized();
@@ -111,7 +135,7 @@ rocket.rocketbox.RocketBox.prototype = {
 			},
 			'width'				: this.processedCanvasSize.width,
 			'height'			: this.processedCanvasSize.height,
-			'renderCallback'	: goog.bind(this.appTicked, this)
+			'renderCallback'	: goog.bind(this.appTick, this)
 		});
 
 		// check if the application wants to autoplay
@@ -157,19 +181,24 @@ rocket.rocketbox.RocketBox.prototype = {
 		
 	},
 
+	enterFullscreen: function () {
+		goog.dom.classes.add(this.ui.playerContainer, 'fullscreen');
+		goog.dom.classes.add(document.body, 'rocketBoxFullScreenBody');
+		this.possibleCanvasResized();
+	},
+
+	leaveFullscreen: function () {
+		goog.dom.classes.remove(this.ui.playerContainer, 'fullscreen');
+		goog.dom.classes.remove(document.body, 'rocketBoxFullScreenBody');
+		this.possibleCanvasResized();
+	},
+
 	toggleFullScreen: function () {
 
-		if (goog.dom.classes.has(this.ui.playerContainer, 'fullscreen')) {
-			goog.dom.classes.remove(this.ui.playerContainer, 'fullscreen');
-			goog.dom.classes.remove(document.body, 'rocketBoxFullScreenBody');
-
-
-		} else {
-			goog.dom.classes.add(this.ui.playerContainer, 'fullscreen');
-			goog.dom.classes.add(document.body, 'rocketBoxFullScreenBody');
-		}
-
-		this.possibleCanvasResized();
+		if (goog.dom.classes.has(this.ui.playerContainer, 'fullscreen'))
+			this.leaveFullscreen();
+		else
+			this.enterFullscreen();
 
 	},
 
@@ -183,6 +212,9 @@ rocket.rocketbox.RocketBox.prototype = {
 	play: function (options) {
 
 		if (this.timer.running) return;
+
+		if (this.options['autoFullscreen'])
+			this.enterFullscreen();
 
 		// start the app
 		this.events.fire(this.eventDictionary.appPlay);
@@ -211,12 +243,44 @@ rocket.rocketbox.RocketBox.prototype = {
 
 	},
 
-	appTicked: function (cycleData) {
+	appTick: function (timerData) {
 	
-		this.ui.fps.innerHTML = (cycleData['fps']?cycleData['fps']:'...');
+		this.ui.fps.innerHTML = (timerData['fps']?timerData['fps']:'...');
 
-		if (this.timer.running && window.rocketPlayerAppId !== this.options['id'])
+		if (this.timer.running && window.rocketPlayerAppId !== this.options['id']) {
+			this.events.fire('LOG', 'RocketBox Pausing ', {
+				'timerRunning': this.timer.running, 
+				'windowId':window.rocketPlayerAppId
+			});
 			this.pause();
+		}
+
+		this.events.fire(this.eventDictionary.appTick, {
+			'timer'	: timerData,
+			'input'	: {
+				'cursor' : this.input.cursor
+			}
+		});
+
+	},
+
+	attachInputEvents: function () {
+
+
+		goog.events.listen(this.ui.canvas, goog.events.EventType.MOUSEMOVE,goog.bind(this._inputEventMouseMove, this));
+
+
+	},
+	_inputEventMouseMove: function (e) {
+
+		this.input.cursor = {
+			'x'	:	e['offsetX'],
+			'y'	:	e['offsetY']
+		};
+
+		if (this.options['realTimeInputEvents'])
+			this.events.fire('INPUT:MOUSE_MOVE', this.input.cursor);
+
 	},
 
 	createPlayerUi: function () {
@@ -227,15 +291,34 @@ rocket.rocketbox.RocketBox.prototype = {
 		});
 		goog.style.setStyle(this.ui.playerContainer, {
 			'position'			: 'relative',
-			'backgroundColor'	: '#444',
-			'border'			: '1px solid #111',
-			'maxWidth'			: this.options['width']+'px',
-			'margin'			: '10px auto 10px auto',
-			'borderRadius'		: '0 0 5px 5px'
+			'maxWidth'			: this.options['width']+'px'
 		});
+
+		// is the player ui attached?
+		if (this.options['playerUi']) {
+
+		goog.style.setStyle(this.ui.playerContainer, {
+			'border'			: '1px solid #111',
+			'backgroundColor'	: '#444',
+			'borderRadius'		: '0 0 5px 5px',
+			'margin'			: '10px auto 10px auto'
+		});
+
+		}
+
 
 		// attach container to user referenced dom node
 		var rootContainer = document.getElementById(this.options['id']);
+		if (!rootContainer) {
+
+			this.events.fire('LOG:ERROR', this.dictionary.rootElementMissing+this.options['id']);
+			
+			// if no root container, create it, 
+			rootContainer = goog.dom.createDom('div', {
+				'id' : this.options['id']
+			});
+
+		}
 		rootContainer.appendChild(this.ui.playerContainer);
 
 
@@ -249,6 +332,17 @@ rocket.rocketbox.RocketBox.prototype = {
 		goog.style.setStyle(this.ui.canvas, {
 			'width'		: '100%'
 		});
+
+
+		if (this.options['flashCanvas'] && typeof FlashCanvas !== "undefined") {
+		    FlashCanvas.initElement(this.ui.canvas);
+		    this.events.fire('LOG:INFO', this.dictionary.flashCanvasInit);
+		} else if (this.options['flashCanvas']) {
+		    this.events.fire('LOG:WARN', this.dictionary.flashCanvasMissing);
+		} 
+
+
+
 		this.ui.playerContainer.appendChild(this.ui.canvas);
 		
 
@@ -260,6 +354,13 @@ rocket.rocketbox.RocketBox.prototype = {
 		}
 		this.canvasContext = this.ui.canvas.getContext('2d');
 		
+
+
+
+		/* Create Player UI container */
+		this.ui.playerUiContainer = goog.dom.createDom('div', {
+			'class'		: 'playerui'
+		});
 
 
 		/* Create Control Bar */
@@ -362,7 +463,7 @@ rocket.rocketbox.RocketBox.prototype = {
 
 
 		// add control bar to Player
-		this.ui.playerContainer.appendChild(this.ui.controlBar);
+		this.ui.playerUiContainer.appendChild(this.ui.controlBar);
 
 
 
@@ -377,7 +478,13 @@ rocket.rocketbox.RocketBox.prototype = {
 			'borderRadius'		: '0 0 5px 5px'
 		});
 		this.ui.infoBar.appendChild(document.createTextNode(this.options['description']));
-		this.ui.playerContainer.appendChild(this.ui.infoBar);
+		this.ui.playerUiContainer.appendChild(this.ui.infoBar);
+
+
+
+		if (this.options['playerUi'])
+			this.ui.playerContainer.appendChild(this.ui.playerUiContainer);
+
 
 
 		/* Create Paused Overlay */
@@ -406,6 +513,9 @@ rocket.rocketbox.RocketBox.prototype = {
 		this.ui.playerContainer.appendChild(this.ui.overlay);
 		goog.events.listen(this.ui.overlay, 'mousemove', goog.bind(this.play, this));
 		goog.events.listen(this.ui.overlay, 'click', goog.bind(this.play, this));
+
+
+
 
 	}
 
