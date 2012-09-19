@@ -40,6 +40,7 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 		'fps'					: 30,			// desired fps
 		'width'					: 480,			// player width
 		'height'				: 320,			// player height
+		'dpp'					: 1,			// dots per pixel
 		'fullscreen'			: false,		// enable fullscreen
 		'autoFullscreen'		: false,		// fullscreen on play
 		'canvasResize'			: true,			// allow canvas resize
@@ -51,6 +52,13 @@ rocket.rocketbox.RocketBox = function (app, userOptions) {
 
 	// extend default options with user options
 	goog.object.extend(this.options, userOptions);
+
+
+	this.playerDimensions = {
+		x: this.options['width'], 
+		y: this.options['height']
+	};
+	this.calculateCanvasDimensions();
 
 	this.canvasContext	= undefined;
 	this.ui				= {};			/* collection of dom elements */
@@ -133,8 +141,8 @@ rocket.rocketbox.RocketBox.prototype = {
 				'fire'				: goog.bind(this.events.fire,this.events), 
 				'listen'			: goog.bind(this.events.listen,this.events)
 			},
-			'width'				: this.processedCanvasSize.width,
-			'height'			: this.processedCanvasSize.height,
+			'width'				: this.canvasDimensions.x,
+			'height'			: this.canvasDimensions.y,
 			'renderCallback'	: goog.bind(this.appTick, this)
 		});
 
@@ -143,7 +151,12 @@ rocket.rocketbox.RocketBox.prototype = {
 			this.play({animateOverlay:false});
 
 	},
-
+	calculateCanvasDimensions: function () {
+		this.canvasDimensions = {
+			x: this.playerDimensions.x * this.options['dpp'],
+			y: this.playerDimensions.y * this.options['dpp']
+		};
+	},
 	possibleCanvasResized: function () {
 
 		var canvasSize = goog.style.getSize(this.ui.canvas);
@@ -167,14 +180,17 @@ rocket.rocketbox.RocketBox.prototype = {
 		if (!this.options['canvasResize'])
 			return;
 
+		this.playerDimensions = {x: canvasSize.width, y: canvasSize.height};
+		this.calculateCanvasDimensions();
+
 		this.events.fire('APP:RESIZE', {
-			'width'		: canvasSize.width,
-			'height'	: canvasSize.height
+			'width'		: this.canvasDimensions.x,
+			'height'	: this.canvasDimensions.y
 		});
 		
 		goog.dom.setProperties(this.ui.canvas, {
-			'width'		: canvasSize.width,
-			'height'	: canvasSize.height
+			'width'		: this.canvasDimensions.x,
+			'height'	: this.canvasDimensions.y
 		});
 
 
@@ -326,8 +342,8 @@ rocket.rocketbox.RocketBox.prototype = {
 		/* Create Canvas Element */
 		this.ui.canvas = goog.dom.createDom('canvas', {
 			'id'		: this.options['id']+'_canvas',
-			'width'		: this.options['width'],
-			'height'	: this.options['height']
+			'width'		: this.canvasDimensions.x,
+			'height'	: this.canvasDimensions.y
 		});
 		goog.style.setStyle(this.ui.canvas, {
 			'width'		: '100%'

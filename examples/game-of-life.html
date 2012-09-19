@@ -1,0 +1,40 @@
+<html>
+<head>
+<!--
+	Implementation of Conway's "Game of Life"
+	By jimmyff (Jimmy Forrester-Fellowes), Rocketware
+	A RocketBox example app
+-->
+
+	<title>Conway's "Game of Life"</title>
+	<base href="../" />
+    <script src="bin/RocketBox.js"></script>
+    <script src="examples/conways-game-of-life.js"></script>
+    <style>body { padding:0px; margin:0; text-align:center; font-family:Arial; background-color:#000; }</style>	
+
+
+</head>
+<body>
+	<div id="board"></div>
+
+	<script>
+	var CGOL = new RocketBox(
+		new ConwaysGameOfLife(),
+		{
+			id:'board',
+			appType: 'Simulation',
+			dpp:0.4,
+			width:640,
+			height:360,
+			fps:10,
+			playerUi: false,
+			autoFullscreen: true,
+			logger:true,
+			title: 'Conways Game of Life',
+			description: 'Implementation of Conways game of life'
+		});
+
+
+	</script>
+</body>
+</html>
