@@ -261,6 +261,8 @@ rocket.rocketbox.RocketBox.prototype = {
 
 	appTick: function (timerData) {
 	
+
+
 		this.ui.fps.innerHTML = (timerData['fps']?timerData['fps']:'...');
 
 		if (this.timer.running && window.rocketPlayerAppId !== this.options['id']) {
@@ -274,7 +276,8 @@ rocket.rocketbox.RocketBox.prototype = {
 		this.events.fire(this.eventDictionary.appTick, {
 			'timer'	: timerData,
 			'input'	: {
-				'cursor' : this.input.cursor
+				'cursor' 		: this.input.cursor,
+				'buttonDown' 	: this.input.buttonDown
 			}
 		});
 
@@ -284,10 +287,14 @@ rocket.rocketbox.RocketBox.prototype = {
 
 
 		goog.events.listen(this.ui.canvas, goog.events.EventType.MOUSEMOVE,goog.bind(this._inputEventMouseMove, this));
+		goog.events.listen(this.ui.canvas, goog.events.EventType.MOUSEDOWN,goog.bind(this._inputEventMouseDown, this));
+		goog.events.listen(this.ui.canvas, goog.events.EventType.MOUSEUP,goog.bind(this._inputEventMouseUp, this));
 
 
 	},
 	_inputEventMouseMove: function (e) {
+
+		// TODO: push on to move array
 
 		this.input.cursor = {
 			'x'	:	e['offsetX'],
@@ -298,7 +305,16 @@ rocket.rocketbox.RocketBox.prototype = {
 			this.events.fire('INPUT:MOUSE_MOVE', this.input.cursor);
 
 	},
-
+	_inputEventMouseDown: function (e) {
+		this.input.buttonDown = true;
+		if (this.options['realTimeInputEvents'])
+			this.events.fire('INPUT:BUTTON_DOWN');
+	},
+	_inputEventMouseUp: function (e) {
+		this.input.buttonDown = false;
+		if (this.options['realTimeInputEvents'])
+			this.events.fire('INPUT:BUTTON_UP');
+	},
 	createPlayerUi: function () {
 
 		/* Create Player Container */
