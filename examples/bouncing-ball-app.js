@@ -31,19 +31,20 @@ BouncingBall.prototype = {
 	},
 	
 	resize: function (eventData) {
-
 		this.width		= eventData.width;
 		this.height		= eventData.height;
-
 	},
 
 	appLoop: function (tickData) {
-
+		// When the mouse is down set the balls location to be the same as the cursor.
+		if (tickData.input.buttonDown) {
+			this.ballPosition.x = tickData.input.cursor.x;
+			this.ballPosition.y = tickData.input.cursor.y;
+		}
 		this.clearCanvas(0.2);
 		this.move(tickData);
 		this.render();
 	},
-
 	clearCanvas: function (opacity) {
 
 		// 0.2 opacity to give trail effect
@@ -56,12 +57,10 @@ BouncingBall.prototype = {
 
 		this.ballPosition.x += ((tickData.timer.dt/5) * this.ballDirection.x);
 		this.ballPosition.y += ((tickData.timer.dt/5) * this.ballDirection.y);
-
 		if (this.ballPosition.x - this.ballRadius < 0) this.ballDirection.x = 1;
 		if (this.ballPosition.x + this.ballRadius > this.width) this.ballDirection.x = -1;
 		if (this.ballPosition.y - this.ballRadius < 0) this.ballDirection.y = 1;
 		if (this.ballPosition.y + this.ballRadius > this.height) this.ballDirection.y = -1;
-		
 	},
 
 	render: function () {
